@@ -2,11 +2,18 @@ from flask import Flask, render_template, session, request, jsonify
 import time
 import pdb
 import fitbit
+import celery_worker
 
 app = Flask(__name__)
 app.secret_key = "thisisakeyfortestpurposesNOT-THE-PROD-KEY"
 # TODO how to put a timeout on the session? E.g. if no interaction from the user for an hour, turn it off?
 # Possibly prompt the user with an "are you still there?" message
+app.config.update(
+	CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379'
+)
+
+celery = celery_worker.make_celery(app)
 
 
 @app.route("/")
@@ -23,7 +30,8 @@ def begin_tracking():
 
 	response_msg = {'response_msg': "tracking is enabled!"}
 
-	print jsonify(response_msg)
+	track_variance()
+
 	return jsonify(response_msg)
 
 
@@ -38,10 +46,16 @@ def stop_tracking():
 	return jsonify(response_msg)
 
 
-@app.route("/track_variance")
+@app.route("/fitbit-input")
+def consume_api():
+	"""This is just a stub to take the FitBit data until I wire 
+	the HR stream up to something interesting """
+	pass
+
+
+@celery.task()
 def track_variance():
 
-	# This makes the page hang and I can't click the stop-tracking button any longer
 	while session['tracking_status'] == 1:
 		time.sleep(10)
 		print "Tracking status is: ", session['tracking_status']

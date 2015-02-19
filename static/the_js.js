@@ -6,7 +6,8 @@ function printTest() {
 
 function startTracking() {
 	// Sets tracking flag to true and calls function to supress button when successful
-	// FIXME If I also call the route to start *actually* tracking, the page hangs.
+	// FIXME If I also call the route to start *actually* tracking, the page hangs. 
+	// Implement Celery Thursday morning
 	$.post("/begin_tracking", 
 		{message: "Turn the tracking on plz kthx"} ,
 		function (result) { 
